@@ -1,0 +1,525 @@
+# ===================================================================
+#  ГЛОБАЛЬНЫЕ КЛАССЫ И ПРАВИЛА
+# ===================================================================
+<MDFillRoundFlatButton>:
+    elevation: 0
+
+# ===================================================================
+#  МЕНЕДЖЕР ВСЕХ ГЛАВНЫХ ЭКРАНОВ ПРИЛОЖЕНИЯ
+# ===================================================================
+MDScreenManager:
+    id: main_screen_manager
+    TestManagementScreen:
+        name: "test_management"
+    DeleteTestScreen:
+        name: "delete_test"
+    TestSelectScreen:
+        name: "test_select"
+    TestSettingsScreen:
+        name: "test_settings"
+    QuizEngineScreen:
+        name: "quiz_engine"
+    QuizWizardScreen:
+        name: "quiz_wizard"
+
+# ===================================================================
+#  1. ПАНЕЛЬ ИНСТРУМЕНТОВ (ГЛАВНЫЙ СТАРТОВЫЙ ЭКРАН)
+# ===================================================================
+<TestManagementScreen>:
+    MDBoxLayout:
+        orientation: "vertical"
+        padding: "24dp"
+        spacing: "18dp"
+
+        MDLabel:
+            text: "Платформа Тестирования"
+            font_style: "H4"
+            bold: True
+            halign: "center"
+            size_hint_y: None
+            height: "60dp"
+
+        MDLabel:
+            text: "Локальный автономный режим работы"
+            font_style: "Subtitle1"
+            halign: "center"
+            theme_text_color: "Secondary"
+            size_hint_y: None
+            height: "30dp"
+
+        Widget:
+            size_hint_y: 0.1
+
+        MDFillRoundFlatButton:
+            text: "▶ Запустить тестирование"
+            size_hint_x: 0.85
+            pos_hint: {"center_x": 0.5}
+            on_release: app.root.current = "test_select"
+
+        MDFillRoundFlatButton:
+            text: "✍ Создать тест самостоятельно (Wizard)"
+            size_hint_x: 0.85
+            pos_hint: {"center_x": 0.5}
+            on_release: app.root.current = "quiz_wizard"
+
+        MDFillRoundFlatButton:
+            text: "❌ Удалить тест с устройства"
+            size_hint_x: 0.85
+            pos_hint: {"center_x": 0.5}
+            on_release: app.root.current = "delete_test"
+
+        # --- НОВАЯ КНОПКА ЗАКРЫТИЯ ПРИЛОЖЕНИЯ ---
+        MDRaisedButton:
+            text: "🚪 Закрыть приложение"
+            size_hint_x: 0.85
+            pos_hint: {"center_x": 0.5}
+            md_bg_color: 0.8, 0.2, 0.2, 1  # Красивый красный цвет для кнопки выхода
+            on_release: app.stop()  # Вызывает нативный метод закрытия Kivy
+
+        Widget:
+            size_hint_y: 0.2
+
+# ===================================================================
+#  2. ВЫБОР ТЕСТА ДЛЯ ПРОХОЖДЕНИЯ
+# ===================================================================
+<TestSelectScreen>:
+    MDBoxLayout:
+        orientation: "vertical"
+        padding: "16dp"
+        spacing: "10dp"
+        MDLabel:
+            id: loading_label
+            text: "Выберите тест для запуска:"
+            font_style: "H6"
+            bold: True
+            halign: "center"
+            size_hint_y: None
+            height: "40dp"
+        ScrollView:
+            MDList:
+                id: container
+        MDFlatButton:
+            text: "Назад к инструментам"
+            pos_hint: {"center_x": 0.5}
+            on_release: app.root.current = "test_management"
+
+# ===================================================================
+#  3. ЭКРАН ПРЕДСТАРТОВЫХ НАСТРОЕК ТЕСТА
+# ===================================================================
+<TestSettingsScreen>:
+    MDBoxLayout:
+        orientation: "vertical"
+        padding: "16dp"
+        spacing: "12dp"
+        MDLabel:
+            text: "Параметры запуска теста"
+            font_style: "H6"
+            bold: True
+            halign: "center"
+        MDTextField:
+            id: entry_max_errors
+            hint_text: "Максимальное количество ошибок"
+            text: "3"
+            mode: "rectangle"
+        MDTextField:
+            id: entry_time_limit
+            hint_text: "Лимит времени на вопрос (в секундах)"
+            text: "30"
+            mode: "rectangle"
+        MDTextField:
+            id: entry_delay
+            hint_text: "Пауза между вопросами (в секундах)"
+            text: "3"
+            mode: "rectangle"
+        MDBoxLayout:
+            orientation: "horizontal"
+            size_hint_y: None
+            height: "40dp"
+            MDCheckbox:
+                id: chk_hints
+                active: True
+                size_hint: None, None
+                size: "40dp", "40dp"
+            MDLabel:
+                text: "Показывать правильные ответы при ошибке"
+                valign: "middle"
+        MDLabel:
+            text: "Наказание при превышении лимита:"
+            bold: True
+        MDBoxLayout:
+            orientation: "vertical"
+            size_hint_y: None
+            height: "180dp"
+            spacing: "4dp"
+            MDBoxLayout:
+                orientation: "horizontal"
+                size_hint_y: None
+                height: "40dp"
+                MDCheckbox:
+                    id: radio_none
+                    group: "punishments"
+                    size_hint: None, None
+                    size: "40dp", "40dp"
+                    on_active: if self.active: root.set_punishment("Без搭建наказания")
+                MDLabel:
+                    text: "Без наказания (Просто завершить тест)"
+                    valign: "middle"
+            MDBoxLayout:
+                orientation: "horizontal"
+                size_hint_y: None
+                height: "40dp"
+                MDCheckbox:
+                    id: radio_lock
+                    group: "punishments"
+                    size_hint: None, None
+                    size: "40dp", "40dp"
+                    on_active: if self.active: root.set_punishment("Блокировка экрана")
+                MDLabel:
+                    text: "Блокировка экрана"
+                    valign: "middle"
+            MDBoxLayout:
+                orientation: "horizontal"
+                size_hint_y: None
+                height: "40dp"
+                MDCheckbox:
+                    id: radio_restart
+                    group: "punishments"
+                    size_hint: None, None
+                    size: "40dp", "40dp"
+                    on_active: if self.active: root.set_punishment("Перезагрузка компьютера")
+                MDLabel:
+                    text: "Перезагрузка компьютера"
+                    valign: "middle"
+            MDBoxLayout:
+                orientation: "horizontal"
+                size_hint_y: None
+                height: "40dp"
+                MDCheckbox:
+                    id: radio_shutdown
+                    group: "punishments"
+                    size_hint: None, None
+                    size: "40dp", "40dp"
+                    on_active: if self.active: root.set_punishment("Выключение компьютера")
+                MDLabel:
+                    text: "Выключение компьютера"
+                    valign: "middle"
+        MDBoxLayout:
+            orientation: "horizontal"
+            size_hint_y: None
+            height: "50dp"
+            spacing: "10dp"
+            MDFlatButton:
+                text: "Отмена"
+                size_hint_x: 0.3
+                on_release: app.root.current = "test_select"
+            MDFillRoundFlatButton:
+                text: "Запустить"
+                size_hint_x: 0.7
+                on_release: root.start_test()
+
+# ===================================================================
+#  4. ЭКРАН УДАЛЕНИЯ ТЕСТОВ
+# ===================================================================
+<DeleteTestScreen>:
+    MDBoxLayout:
+        orientation: "vertical"
+        padding: "16dp"
+        spacing: "10dp"
+        MDLabel:
+            text: "Выберите тест для безвозвратного удаления:"
+            font_style: "H6"
+            bold: True
+            halign: "center"
+            size_hint_y: None
+            height: "40dp"
+        ScrollView:
+            MDList:
+                id: delete_container
+        MDFlatButton:
+            text: "Назад к инструментам"
+            pos_hint: {"center_x": 0.5}
+            on_release: app.root.current = "test_management"
+
+# ===================================================================
+#  5. ИГРОВОЙ ДВИЖОК ТЕСТИРОВАНИЯ (QUIZ ENGINE)
+# ===================================================================
+<QuizEngineScreen>:
+    MDBoxLayout:
+        orientation: "vertical"
+        padding: "12dp"
+        spacing: "6dp"
+
+        MDLabel:
+            text: root.status_text
+            font_style: "Subtitle1"
+            bold: True
+            halign: "center"
+            size_hint_y: None
+            height: "45dp"
+
+        MDLabel:
+            text: root.timer_text
+            font_style: "H6"
+            halign: "center"
+            theme_text_color: "Custom"
+            text_color: 0.9, 0.1, 0.1, 1
+            size_hint_y: None
+            height: "25dp"
+
+        MDBoxLayout:
+            id: slider_container
+            orientation: "vertical"
+            size_hint_y: None
+            height: 0
+            spacing: "4dp"
+            Image:
+                id: img_display
+                source: ""
+                allow_stretch: True
+                keep_ratio: True
+            MDBoxLayout:
+                id: slider_nav_bar
+                orientation: "horizontal"
+                size_hint_y: None
+                height: "32dp"
+                spacing: "15dp"
+                pos_hint: {"center_x": 0.5}
+                size_hint_x: None
+                width: "180dp"
+                MDIconButton:
+                    icon: "arrow-left-bold"
+                    on_release: root.prev_img()
+                MDLabel:
+                    text: root.image_counter_text
+                    halign: "center"
+                    bold: True
+                MDIconButton:
+                    icon: "arrow-right-bold"
+                    on_release: root.next_img()
+
+        MDCard:
+            orientation: "vertical"
+            padding: "12dp"
+            size_hint_y: 0.25
+            elevation: 0
+            ScrollView:
+                MDLabel:
+                    text: root.question_text
+                    font_style: "Body1"
+                    halign: "center"
+                    size_hint_y: None
+                    height: self.texture_size[1]
+
+        ScrollView:
+            size_hint_y: 0.4
+            MDBoxLayout:
+                id: options_box
+                orientation: "vertical"
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: "4dp"
+                padding: ["8dp", "0dp"]
+
+        MDFlatButton:
+            text: root.ad_text
+            halign: "center"
+            size_hint_x: 1
+            theme_text_color: "Custom"
+            text_color: 0.9, 0.5, 0.0, 1
+            on_release: root.click_ads()
+
+        MDBoxLayout:
+            orientation: "horizontal"
+            size_hint_y: None
+            height: "48dp"
+            spacing: "12dp"
+            MDFillRoundFlatButton:
+                id: btn_submit
+                text: "Подтвердить ответ"
+                size_hint_x: 0.75
+                on_release: root.check_answer()
+            MDFlatButton:
+                id: btn_abort
+                text: "Прервать"
+                size_hint_x: 0.25
+                on_release: root.force_exit()
+
+# ===================================================================
+#  6. КОНСТРУКТОР ТЕСТОВ (QUIZ WIZARD - НАЧАЛО)
+# ===================================================================
+<QuizWizardScreen>:
+    id: wizard_root
+    MDScreenManager:
+        id: wizard_manager
+
+        MDScreen:
+            name: "step_init"
+            MDBoxLayout:
+                orientation: "vertical"
+                padding: "24dp"
+                spacing: "16dp"
+                MDLabel:
+                    text: "Шаг 1: Создание нового теста"
+                    font_style: "H6"
+                    bold: True
+                    halign: "center"
+                MDTextField:
+                    id: entry_test_name
+                    hint_text: "Введите уникальное название теста"
+                    mode: "rectangle"
+                MDFillRoundFlatButton:
+                    text: "Продолжить"
+                    pos_hint: {"center_x": 0.5}
+                    on_release: root.start_new_test()
+                MDFlatButton:
+                    text: "Отмена"
+                    pos_hint: {"center_x": 0.5}
+                    on_release: root.exit_wizard()
+
+        MDScreen:
+            name: "step_questions_list"
+            MDBoxLayout:
+                orientation: "vertical"
+                padding: "16dp"
+                spacing: "12dp"
+                MDLabel:
+                    text: "Шаг 2: Список вопросов теста"
+                    font_style: "Subtitle1"
+                    bold: True
+                MDLabel:
+                    text: "Тест: " + root.test_name
+                    font_style: "Caption"
+                ScrollView:
+                    MDList:
+                        id: wizard_container
+                MDBoxLayout:
+                    orientation: "horizontal"
+                    size_hint_y: None
+                    height: "50dp"
+                    spacing: "10dp"
+                    MDFlatButton:
+                        text: "Отмена"
+                        size_hint_x: 0.3
+                        on_release: root.cancel_wizard_check()
+                    MDFillRoundFlatButton:
+                        text: "➕ Добавить вопрос"
+                        size_hint_x: 0.3
+                        on_release: root.open_question_form()
+                    MDFillRoundFlatButton:
+                        text: "💾 Сохранить весь тест"
+                        size_hint_x: 0.4
+                        md_bg_color: 0.2, 0.6, 0.2, 1
+                        on_release: root.save_entire_test_to_json()
+
+        MDScreen:
+            name: "step_question_form"
+            MDBoxLayout:
+                orientation: "vertical"
+                padding: "16dp"
+                spacing: "12dp"
+                MDLabel:
+                    text: "Конструктор: Настройка вопроса"
+                    font_style: "Subtitle1"
+                    bold: True
+                    halign: "center"
+                    size_hint_y: None
+                    height: "40dp"
+                MDTextField:
+                    id: entry_q_text
+                    hint_text: "Введите формулировку вопроса"
+                    mode: "rectangle"
+                    size_hint_y: None
+                    height: "50dp"
+                                    # --- ИСПРАВЛЕННЫЙ БЛОК: Только кнопка добавления фото по центру ---
+                MDBoxLayout:
+                    orientation: "horizontal"
+                    size_hint_y: None
+                    height: "50dp"
+                    pos_hint: {"center_x": 0.5}
+                    size_hint_x: None
+                    width: "200dp"
+
+                    MDFillRoundFlatButton:
+                        id: btn_pc_attach
+                        text: "📸 Добавить фото"
+                        size_hint_x: 1
+                        pos_hint: {"center_y": 0.5}
+                        md_bg_color: 0.2, 0.5, 0.8, 1 # Приятный синий цвет кнопки
+                        on_release: root.attach_media_via_plyer()
+                # ------------------------------------------------------------------
+
+                ScrollView:
+                    size_hint_y: None
+                    height: "70dp"
+                    do_scroll_x: True
+                    do_scroll_y: False
+                    MDBoxLayout:
+                        id: thumbnails_container
+                        orientation: "horizontal"
+                        size_hint_x: None
+                        width: self.minimum_width
+                        spacing: "10dp"
+                        padding: ["4dp", "4dp"]
+                # -------------------------------------------------------------------------
+
+                Widget:
+                    size_hint_y: None
+                    height: "10dp"
+                ScrollView:
+                    MDBoxLayout:
+                        orientation: "vertical"
+                        size_hint_y: None
+                        height: self.minimum_height
+                        spacing: "15dp"
+                        MDLabel:
+                            text: "Правильные варианты ответов:"
+                            bold: True
+                            theme_text_color: "Custom"
+                            text_color: 0.2, 0.6, 0.2, 1
+                            size_hint_y: None
+                            height: "24dp"
+                        MDBoxLayout:
+                            id: correct_fields_box
+                            orientation: "vertical"
+                            size_hint_y: None
+                            height: self.minimum_height
+                            spacing: "6dp"
+                        MDFlatButton:
+                            text: "[i]+ Добавить правильный ответ[/i]"
+                            markup: True
+                            theme_text_color: "Custom"
+                            text_color: 0.2, 0.6, 0.2, 1
+                            on_release: root.add_dynamic_reply_field(is_correct=True)
+                        MDLabel:
+                            text: "Неправильные варианты ответов:"
+                            bold: True
+                            theme_text_color: "Custom"
+                            text_color: 0.8, 0.2, 0.2, 1
+                            size_hint_y: None
+                            height: "24dp"
+                        MDBoxLayout:
+                            id: incorrect_fields_box
+                            orientation: "vertical"
+                            size_hint_y: None
+                            height: self.minimum_height
+                            spacing: "6dp"
+                        MDFlatButton:
+                            text: "[i]+ Добавить неправильный ответ[/i]"
+                            markup: True
+                            theme_text_color: "Custom"
+                            text_color: 0.8, 0.2, 0.2, 1
+                            on_release: root.add_dynamic_reply_field(is_correct=False)
+                MDBoxLayout:
+                    orientation: "horizontal"
+                    size_hint_y: None
+                    height: "50dp"
+                    spacing: "15dp"
+                    MDFlatButton:
+                        text: "Отмена"
+                        size_hint_x: 0.3
+                        on_release: root.ids.wizard_manager.current = "step_questions_list"
+                    MDFillRoundFlatButton:
+                        text: "Зафиксировать вопрос"
+                        size_hint_x: 0.7
+                        md_bg_color: 0.1, 0.5, 0.8, 1
+                        on_release: root.save_question_to_memory()
