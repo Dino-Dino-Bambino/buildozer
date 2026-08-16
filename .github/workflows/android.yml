@@ -54,8 +54,12 @@ jobs:
 
     - name: Debug Build APK
       run: |
+        # Возвращаем права доступа пользователю runner на его же папку
+        sudo chown -R runner:runner /home/runner/.buildozer
+        
         export BUILDOZER_ALLOW_ORG_TEST_DOMAIN=1
         buildozer android debug
+
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
