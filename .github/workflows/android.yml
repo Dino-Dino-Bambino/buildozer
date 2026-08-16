@@ -54,11 +54,16 @@ jobs:
 
     - name: Debug Build APK
       run: |
-        # Возвращаем права доступа пользователю runner на его же папку
+        # Возвращаем права доступа
         sudo chown -R runner:runner /home/runner/.buildozer
         
+        # Передаем Buildozer точные системные пути к Android SDK и NDK
+        export ANDROID_SDK_HOME=$ANDROID_HOME
+        export ANDROID_NDK_HOME=$ANDROID_HOME/ndk/26.1.10909125
         export BUILDOZER_ALLOW_ORG_TEST_DOMAIN=1
+        
         buildozer android debug
+
 
 
     - name: Upload APK Artifact
