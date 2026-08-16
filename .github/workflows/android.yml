@@ -35,7 +35,8 @@ jobs:
     - name: Install Buildozer and dependencies
       run: |
         python3 -m pip install --upgrade pip
-        python3 -m pip install buildozer cython git+https://github.com
+        python3 -m pip install buildozer cython
+
 
     - name: Install Linux Packages
       run: |
