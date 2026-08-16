@@ -1,7 +1,7 @@
 on:
   push:
     branches: [ "**" ]
-  workflow_dispatch: # Добавлена кнопка ручного запуска!
+  workflow_dispatch:
 
 env:
   PYTHONFORANDROID_PREREQUISITES_INSTALL_INTERACTIVE: 0
@@ -14,10 +14,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Setup Python
+    - name: Setup Python 3.11 (FORCE)
       uses: actions/setup-python@v5
       with:
-        python-version: '3.14'
+        python-version: '3.11.11' # Жестко фиксируем рабочую версию для сервера
 
     - name: Setup Java
       uses: actions/setup-java@v4
@@ -25,10 +25,17 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
+    - name: Link host python to 3.11
+      run: |
+        # Этот хак подменяет глобальный вызов 'python3' на сервере на нашу версию 3.11
+        sudo ln -sf /opt/hostedtoolcache/Python/3.11.11/x64/bin/python3 /usr/local/bin/python3
+        sudo ln -sf /opt/hostedtoolcache/Python/3.11.11/x64/bin/python3 /usr/bin/python3
+        python3 --version # В логах должно напечататься 3.11!
+
     - name: Install Buildozer and dependencies
       run: |
-        pip install --upgrade pip
-        pip install buildozer cython git+https://github.com/kivy/buildozer.git
+        python3 -m pip install --upgrade pip
+        python3 -m pip install buildozer cython git+https://github.com
 
     - name: Install Linux Packages
       run: |
@@ -38,39 +45,12 @@ jobs:
     - name: Pre-install Android SDK Tools
       run: |
         export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/tools/bin:$PATH
-        
-        # Заставляем систему принять абсолютно все лицензии, включая новые
         mkdir -p ~/.android && touch ~/.android/repositories.cfg
         yes | sdkmanager --licenses || true
-        
-        # Принудительно устанавливаем конкретную стабильную версию build-tools
         sdkmanager --install "build-tools;34.0.0" "platform-tools" "platforms;android-34"
-        
-        # Делаем симлинк, чтобы Buildozer гарантированно увидел утилиту aidl
-        sudo mkdir -p /home/runner/.buildozer/android/platform/android-sdk/build-tools
-        sudo ln -s $ANDROID_HOME/build-tools/34.0.0 /home/runner/.buildozer/android/platform/android-sdk/build-tools/34.0.0
-
-
 
     - name: Debug Build APK
       run: |
         sudo chown -R runner:runner /home/runner/.buildozer
-        
-        # Обманываем устаревший Buildozer: создаем старый путь и связываем его с новым sdkmanager
-        sudo mkdir -p /usr/local/lib/android/sdk/tools/bin
-        sudo ln -sf /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager /usr/local/lib/android/sdk/tools/bin/sdkmanager
-        
         export BUILDOZER_ALLOW_ORG_TEST_DOMAIN=1
         buildozer android debug
-
-
-
-
-
-
-
-    - name: Upload APK Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: Kivy-App-APK
-        path: bin/*.apk
