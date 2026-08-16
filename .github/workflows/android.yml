@@ -33,7 +33,7 @@ jobs:
     - name: Install Linux Packages
       run: |
         sudo apt update
-        sudo apt -y install automake libltdl-dev libffi-dev bitcoind autoconf libtool pkg-config zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libsqlite3-dev tk-dev libgdbm-compat-dev
+        sudo apt -y install automake libltdl-dev libffi-dev autoconf libtool pkg-config zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libsqlite3-dev tk-dev libgdbm-compat-dev
 
     - name: Pre-install Android SDK Tools
       run: |
