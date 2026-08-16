@@ -54,15 +54,18 @@ jobs:
 
     - name: Debug Build APK
       run: |
-        # Возвращаем права доступа
+        # Исправляем права доступа на папки
         sudo chown -R runner:runner /home/runner/.buildozer
         
-        # Передаем Buildozer точные системные пути к Android SDK и NDK
-        export ANDROID_SDK_HOME=$ANDROID_HOME
-        export ANDROID_NDK_HOME=$ANDROID_HOME/ndk/26.1.10909125
+        # Переносим реальный работающий sdkmanager туда, где его ищет Buildozer
+        mkdir -p /home/runner/.buildozer/android/platform/android-sdk/tools/bin
+        ln -s $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager /home/runner/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
+        
+        # Передаем системные переменные
         export BUILDOZER_ALLOW_ORG_TEST_DOMAIN=1
         
         buildozer android debug
+
 
 
 
