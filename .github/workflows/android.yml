@@ -37,10 +37,12 @@ jobs:
 
     - name: Pre-install Android SDK Tools
       run: |
-        # Автоматически принимаем все лицензии Android SDK и ставим build-tools
+        # Добавляем путь к sdkmanager в системную среду сервера
+        export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/tools/bin:$PATH
         mkdir -p ~/.android && touch ~/.android/repositories.cfg
         yes | sdkmanager --licenses
         sdkmanager "build-tools;34.0.0" "platform-tools" "platforms;android-34"
+
 
     - name: Debug Build APK
       run: |
