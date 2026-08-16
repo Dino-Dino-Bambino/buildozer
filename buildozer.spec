@@ -20,7 +20,7 @@ version = 0.1
 
 # (list) Application requirements
 # Зафиксирована стабильная версия Kivy для предотвращения ошибок Cython
-requirements = python3==3.11.11,kivy==2.3.0
+requirements = python3, kivy==2.3.1
 
 # (str) Supported orientations
 orientation = portrait
