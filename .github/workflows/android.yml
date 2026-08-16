@@ -37,11 +37,19 @@ jobs:
 
     - name: Pre-install Android SDK Tools
       run: |
-        # Добавляем путь к sdkmanager в системную среду сервера
         export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/tools/bin:$PATH
+        
+        # Заставляем систему принять абсолютно все лицензии, включая новые
         mkdir -p ~/.android && touch ~/.android/repositories.cfg
-        yes | sdkmanager --licenses
-        sdkmanager "build-tools;34.0.0" "platform-tools" "platforms;android-34"
+        yes | sdkmanager --licenses || true
+        
+        # Принудительно устанавливаем конкретную стабильную версию build-tools
+        sdkmanager --install "build-tools;34.0.0" "platform-tools" "platforms;android-34"
+        
+        # Делаем симлинк, чтобы Buildozer гарантированно увидел утилиту aidl
+        sudo mkdir -p /home/runner/.buildozer/android/platform/android-sdk/build-tools
+        sudo ln -s $ANDROID_HOME/build-tools/34.0.0 /home/runner/.buildozer/android/platform/android-sdk/build-tools/34.0.0
+
 
 
     - name: Debug Build APK
