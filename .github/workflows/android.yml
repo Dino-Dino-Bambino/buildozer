@@ -1,4 +1,7 @@
-on: [push, pull_request]
+on:
+  push:
+    branches: [ "**" ]
+  workflow_dispatch: # Добавлена кнопка ручного запуска!
 
 env:
   PYTHONFORANDROID_PREREQUISITES_INSTALL_INTERACTIVE: 0
@@ -6,46 +9,46 @@ env:
 name: Android Integration
 jobs:
   Integration:
-    strategy:
-      matrix:
-        os:
-          - 'ubuntu-latest'
-          - 'macos-latest'
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
     - name: Setup Python
-      uses: actions/setup-python@v7
+      uses: actions/setup-python@v5
       with:
         python-version: '3.11'
+
     - name: Setup Java
-      uses: actions/setup-java@v5
+      uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
-    - uses: actions/checkout@v7
-    - name: Setup environment
+
+    - name: Install Buildozer and dependencies
       run: |
-        pip install .
-    - run: buildozer --help
-    - name: SDK, NDK, and p4a download
-      run: |
-        sed -i.bak "s/# android.accept_sdk_license = False/android.accept_sdk_license = True/" buildozer.spec
-        sed -i.bak "s/#p4a.branch = master/p4a.branch = develop/" buildozer.spec
-        buildozer android p4a -- --help
-    # Install OS specific dependencies
-    - name: Install Linux dependencies
-      if: runner.os == 'Linux'
-      # Required by some p4a recipes, but not
-      # installed by p4a on Linux.
+        pip install --upgrade pip
+        pip install buildozer cython git+https://github.com
+
+    - name: Install Linux Packages
       run: |
         sudo apt update
-        sudo apt -y install automake libltdl-dev
-    - name: Debug Build
+        sudo apt -y install automake libltdl-dev libffi-dev bitcoind autoconf libtool pkg-config zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libsqlite3-dev tk-dev libgdbm-compat-dev
+
+    - name: Pre-install Android SDK Tools
       run: |
-        touch main.py
-        buildozer android debug
-    - name: Release Build (aab)
+        # Автоматически принимаем все лицензии Android SDK и ставим build-tools
+        mkdir -p ~/.android && touch ~/.android/repositories.cfg
+        yes | sdkmanager --licenses
+        sdkmanager "build-tools;34.0.0" "platform-tools" "platforms;android-34"
+
+    - name: Debug Build APK
       run: |
-        touch main.py
         export BUILDOZER_ALLOW_ORG_TEST_DOMAIN=1
-        buildozer android release
+        buildozer android debug
+
+    - name: Upload APK Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Kivy-App-APK
+        path: bin/*.apk
