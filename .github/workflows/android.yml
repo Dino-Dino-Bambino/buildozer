@@ -54,17 +54,23 @@ jobs:
 
     - name: Debug Build APK
       run: |
-        # Исправляем права доступа на папки
+        # Исправляем права доступа
         sudo chown -R runner:runner /home/runner/.buildozer
         
-        # Переносим реальный работающий sdkmanager туда, где его ищет Buildozer
-        mkdir -p /home/runner/.buildozer/android/platform/android-sdk/tools/bin
-        ln -s $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager /home/runner/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
+        # Насильно прописываем все пути к Android SDK для Buildozer
+        export ANDROID_HOME=/usr/local/lib/android/sdk
+        export ANDROID_SDK_ROOT=/usr/local/lib/android/sdk
         
-        # Передаем системные переменные
+        # Добавляем все возможные папки со специальными утилитами в PATH
+        export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools:$PATH
+        
+        # Проверяем, что бинарники доступны (это исключит ошибку)
+        which sdkmanager
+        
+        # Разрешаем тестовый домен и запускаем
         export BUILDOZER_ALLOW_ORG_TEST_DOMAIN=1
-        
         buildozer android debug
+
 
 
 
