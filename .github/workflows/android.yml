@@ -46,8 +46,13 @@ jobs:
 
     - name: Debug Build APK
       run: |
+        # Обманываем Buildozer: создаем старый путь и связываем его с реальным sdkmanager
+        sudo mkdir -p /usr/local/lib/android/sdk/tools/bin
+        sudo ln -sf /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager /usr/local/lib/android/sdk/tools/bin/sdkmanager
+        
         export BUILDOZER_ALLOW_ORG_TEST_DOMAIN=1
         
-        # Запускаем сборщик напрямую через изолированный Python 3.11
+        # Запускаем сборщик через изолированный Python 3.11
         /opt/hostedtoolcache/Python/3.11.11/x64/bin/buildozer android debug
+
 
